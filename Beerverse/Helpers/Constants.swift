@@ -17,10 +17,13 @@ struct Constants {
     
     struct CELLS {
         static let BEER_CELL = "BeerCell"
+        static let BEER_DETAILCELL_1 = "BeerDetailCell_1"
+        static let BEER_DETAILCELL_2 = "BeerDetailCell_2"
     }
     
     struct FONTS {
         static let COURIER = "Courier"
         static let COURIER_BOLD = "Courier-Bold"
     }
+    
 }

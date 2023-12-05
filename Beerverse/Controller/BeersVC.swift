@@ -44,6 +44,7 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
         addSubviews()
         collectionView.frame = view.bounds
         doFetch()
+        setScrollToTopButton()
     }
     
     private func doFetch() {
@@ -57,7 +58,6 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
                 }
-                currentPage += 1
             case .failure(let error):
                 self.handleFetchError(error)
             }
@@ -93,6 +93,29 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
         alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         
         present(alertController, animated: true, completion: nil)
+    }
+    
+    private func setScrollToTopButton() {
+        scrollToTopButton.setTitle("Beerverse", for: .normal)
+        scrollToTopButton.addTarget(self, action: #selector(scrollToTop), for: .touchUpInside)
+        scrollToTopButton.titleLabel?.font = UIFont(name: Constants.FONTS.COURIER, size: 16)
+        scrollToTopButton.setTitleColor(.black, for: .normal)
+        
+        navigationItem.titleView = scrollToTopButton
+    }
+    
+    @objc func scrollToTop() {
+        UIView.animate(withDuration: 0.2) {
+            self.scrollToTopButton.transform = CGAffineTransform(scaleX: 1.4, y: 1.4)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            UIView.animate(withDuration: 0.2) {
+                self.scrollToTopButton.transform = .identity
+            }
+        }
+        let indexPath = IndexPath(item: 0, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
     }
     
     
@@ -144,7 +167,7 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.item == beers.count - 1 {
-            
+            currentPage += 1
             fetchBeers { [weak self] result in
                 guard let self = self else { return }
                 switch result {
@@ -180,7 +203,7 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedBeer = beers[indexPath.item]
-        
+        showBeerDetails(for: selectedBeer)
     }
     
     // MARK: - UICollectionViewDelegateFlowLayout
@@ -195,6 +218,13 @@ class BeersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDel
         let totalSpacing = (numberOfItemsPerRow - 1) * spacingBetweenCells
         let width = (collectionView.bounds.width - totalSpacing - layout.sectionInset.left - layout.sectionInset.right) / numberOfItemsPerRow
         return CGSize(width: width, height: width)
+    }
+}
+
+extension BeersVC {
+    func showBeerDetails(for beer: Beer) {
+        let beerDetailsVC = BeerDetailsVC(beer: beer)
+        navigationController?.pushViewController(beerDetailsVC, animated: true)
     }
 }
 
